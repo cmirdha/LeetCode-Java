@@ -7,24 +7,31 @@
  *
  * Approach:
  * 1. Use two pointers, left and right, to maintain a sliding window.
- * 2. Expand the window by moving the right pointer until the window sum
- *    becomes greater than or equal to the target.
- * 3. Once the target is reached, calculate the current window length.
- * 4. Update the minimum length found so far.
- * 5. Shrink the window by moving the left pointer and subtracting
- *    the element leaving the window.
- * 6. Continue until all possible windows have been checked.
- * 7. Return 0 if no valid subarray is found.
+ * 2. Expand the window by moving the right pointer and add each element
+ *    to the current window sum.
+ * 3. Whenever the sum becomes greater than or equal to the target,
+ *    calculate the current window size.
+ * 4. Update the minimum window length found so far.
+ * 5. Shrink the window by removing the element at the left pointer
+ *    and move the left pointer forward.
+ * 6. Continue shrinking while the window sum is greater than or equal
+ *    to the target.
+ * 7. If no valid subarray exists, return 0.
  *
  * Explanation:
- * The sliding window technique avoids checking every possible subarray.
- * The right pointer expands the window to reach the target sum, while
- * the left pointer shrinks the window to find the smallest possible
- * subarray that still satisfies the target.
+ * The sliding window is expanded until its sum reaches or exceeds
+ * the target. Once the target is reached, we try to make the window
+ * smaller by moving the left pointer.
  *
- * Since all elements in the array are positive, removing elements from
- * the left always decreases the sum, which makes the sliding window
- * approach possible.
+ * This allows us to find the smallest possible contiguous subarray
+ * whose sum is greater than or equal to the target without checking
+ * every possible subarray.
+ *
+ * The current window size is:
+ *
+ *      right - left + 1
+ *
+ * The minimum valid window size is stored as the answer.
  *
  * Time Complexity: O(n)
  * Space Complexity: O(1)
@@ -35,38 +42,23 @@ class Solution {
     public int minSubArrayLen(int target, int[] nums) {
 
         int left = 0;
-        int right = 0;
-        int sum = nums[0];
-        int minLen = Integer.MAX_VALUE;
+        int sum = 0;
+        int output = Integer.MAX_VALUE;
 
-        while (right < nums.length) {
+        for (int right = 0; right < nums.length; right++) {
 
-            while (sum < target && right < nums.length - 1) {
-                right++;
-                sum = sum + nums[right];
-            }
+            sum = sum + nums[right];
 
-            if (sum >= target) {
-                minLen = Math.min(minLen, right - left + 1);
-            }
+            while (sum >= target) {
 
-            if (left >= nums.length) {
-                break;
-            }
+                int windowSize = right - left + 1;
+                output = Math.min(windowSize, output);
 
-            sum = sum - nums[left];
-            left++;
-
-            if (left > right && left < nums.length) {
-                right = left;
-                sum = nums[left];
-            }
-
-            if (sum < target && right == nums.length - 1) {
-                break;
+                sum -= nums[left];
+                left++;
             }
         }
 
-        return minLen == Integer.MAX_VALUE ? 0 : minLen;
+        return output == Integer.MAX_VALUE ? 0 : output;
     }
 }
