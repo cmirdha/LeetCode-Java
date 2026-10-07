@@ -133,3 +133,107 @@ class Solution {
         return map;
     }
 }
+
+
+
+/*
+ * Problem: Minimum Window Substring
+ * LeetCode: #76
+ * Difficulty: Hard
+ *
+ * Pattern: Sliding Window
+ *
+ * Approach:
+ * 1. Create a frequency array to store the required frequency of each
+ *    character from string t.
+ * 2. Use two pointers, left and right, to maintain a sliding window
+ *    over string s.
+ * 3. Expand the window by moving the right pointer.
+ * 4. If the current character is still required by t, increase the
+ *    count of matched characters.
+ * 5. Decrease the frequency of the current character in the frequency
+ *    array.
+ * 6. When the window contains all characters required by t, try to
+ *    shrink the window from the left.
+ * 7. Store the smallest valid window found.
+ * 8. When removing a character causes the window to become invalid,
+ *    stop shrinking and continue expanding from the right.
+ *
+ * Explanation:
+ * The frequency array keeps track of how many characters from t are
+ * still required by the current window.
+ *
+ * When a character from s is added:
+ * - If its required frequency is greater than 0, it contributes to
+ *   satisfying the characters of t.
+ * - Its frequency is then decreased.
+ *
+ * Once count becomes equal to the length of t, the current window
+ * contains all required characters. We then move the left pointer to
+ * find the smallest possible valid window.
+ *
+ * When a character is removed from the left and its frequency becomes
+ * greater than 0, that character is required again, so count is
+ * decreased.
+ *
+ * Time Complexity: O(n + m)
+ * Space Complexity: O(1)
+ */
+
+class Solution {
+
+    public String minWindow(String s, String t) {
+
+        int left = 0;
+        int count = 0;
+        String output = "";
+        int minlen = Integer.MAX_VALUE;
+
+        int[] freq = new int[264];
+
+        int slen = s.length();
+        int tlen = t.length();
+
+        if (tlen > slen) {
+            return "";
+        }
+
+        for (int i = 0; i < tlen; i++) {
+            char ch = t.charAt(i);
+            freq[ch]++;
+        }
+
+        for (int right = 0; right < slen; right++) {
+
+            char ch = s.charAt(right);
+
+            if (freq[ch] > 0) {
+                count++;
+            }
+
+            freq[ch]--;
+
+            while (count == tlen) {
+
+                int strlen = right - left + 1;
+
+                if (strlen < minlen) {
+                    output = s.substring(left, right + 1);
+                    minlen = strlen;
+                }
+
+                char ch1 = s.charAt(left);
+
+                freq[ch1]++;
+
+                if (freq[ch1] > 0) {
+                    count--;
+                }
+
+                left++;
+            }
+        }
+
+        return output;
+    }
+}
