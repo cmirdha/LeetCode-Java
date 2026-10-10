@@ -3,7 +3,7 @@
  * LeetCode: #876
  * Difficulty: Easy
  *
- * Pattern: Fast & Slow Pointers floyds Cycle detection
+ * Pattern: Fast & Slow Pointers
  *
  * Approach:
  * 1. Initialize both slow and fast pointers at the head.
