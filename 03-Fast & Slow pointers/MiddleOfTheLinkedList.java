@@ -3,7 +3,7 @@
  * LeetCode: #876
  * Difficulty: Easy
  *
- * Pattern: Fast & Slow Pointers
+ * Pattern: Fast & Slow Pointers or Floyd's Tortoise and Hare
  *
  * Approach:
  * 1. Initialize both slow and fast pointers at the head.
