@@ -29,7 +29,7 @@
  * - first and second are the nodes being swapped.
  * - secondnext saves the remaining linked list.
  * - After swapping, first becomes the previous node
- *   for the next recursive call.
+ *   for the next recursive call
  * - An incomplete pair is left unchanged.
  *
  * Complexity Analysis:
