@@ -92,3 +92,91 @@ class Solution {
         return curr;
     }
 }
+
+
+
+/*
+ * Problem Name: Rotate List
+ * LeetCode Number: 61
+ * Difficulty: Medium
+ * Pattern: Linked List - Circular Linked List
+ *
+ * Approach:
+ * Convert the linked list into a circular linked list.
+ * Calculate the effective rotation using modulo.
+ * Find the new tail and break the circular connection.
+ *
+ * Step-by-step Logic:
+ * 1. If the list is empty, contains only one node, or k == 0,
+ *    return head.
+ * 2. Initialize temp = head and size = 1.
+ * 3. Traverse the list to find the last node and calculate size.
+ * 4. Connect the last node to head to form a circular list.
+ * 5. Calculate the effective rotation:
+ *    rotation = k % size.
+ * 6. Calculate the number of steps to reach the new tail:
+ *    count = size - rotation.
+ * 7. Start traversenode from head.
+ * 8. Move traversenode count - 1 times.
+ * 9. Save the node after traversenode as nextnode.
+ * 10. Break the circular connection:
+ *     traversenode.next = null.
+ * 11. Update head = nextnode.
+ * 12. Return head.
+ *
+ * Key Observations:
+ * - The last node is connected to head to form a circle.
+ * - Modulo avoids unnecessary rotations.
+ * - The new tail is at position size - rotation.
+ * - The node after the new tail becomes the new head.
+ * - Breaking the circular connection completes the rotation.
+ *
+ * Complexity Analysis:
+ * Time Complexity: O(n), where n is the number of nodes.
+ * Space Complexity: O(1), because only pointers are used.
+ */
+
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+
+        if (head == null || head.next == null || k == 0) {
+            return head;
+        }
+
+        ListNode temp = head;
+        int size = 1;
+
+        // Find the last node and calculate the list size.
+        while (temp != null && temp.next != null) {
+            temp = temp.next;
+            size++;
+        }
+
+        // Convert the linked list into a circular linked list.
+        temp.next = head;
+
+        // Calculate the effective rotation.
+        int rotation = k % size;
+
+        // Find the number of steps required to reach new tail.
+        int count = size - rotation;
+
+        ListNode traversenode = head;
+
+        // Reach the new tail.
+        while (count > 1) {
+            traversenode = traversenode.next;
+            count--;
+        }
+
+        // Save the new head.
+        ListNode nextnode = traversenode.next;
+
+        // Break the circular connection.
+        traversenode.next = null;
+
+        head = nextnode;
+
+        return head;
+    }
+}
