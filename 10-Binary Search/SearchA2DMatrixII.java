@@ -440,3 +440,282 @@ class Solution {
 
     }
 }
+I’ll keep your implementation and variable names unchanged, and turn the comments into self-contained problem-solving notes. One important assumption is that each column is sorted in ascending order from top to bottom.**File:** `SearchA2DMatrix.java`
+
+        **Commit Message:** `Day 41 - Search a 2D Matrix`
+
+        ```java
+/*
+================================================================
+PROBLEM: SEARCH A 2D MATRIX
+PATTERN: Binary Search in Each Column
+================================================================
+
+PROBLEM IN SIMPLE WORDS
+----------------------------------------------------------------
+We are given a grid of numbers and a target number. We need to
+return true if the target appears anywhere in the grid; otherwise,
+we return false.
+
+This solution assumes:
+- The matrix is non-empty.
+- Every column is sorted in ascending order from top to bottom.
+
+Example:
+
+ matrix = [
+ [1, 4, 7],
+ [2, 5, 8],
+ [3, 6, 9]
+ ]
+
+The columns are sorted:
+ Column 0: 1, 2, 3
+ Column 1: 4, 5, 6
+ Column 2: 7, 8, 9
+
+For target = 6, the answer is true.
+
+
+REAL-LIFE ANALOGY
+----------------------------------------------------------------
+Imagine several vertical shelves, each holding books labeled with
+increasing numbers from top to bottom. You need to find a book
+with a particular number.
+
+Because the numbers on each shelf are sorted, you do not need to
+inspect every book on a shelf one by one. You can use Binary Search
+to repeatedly cut the possible part of that shelf in half.
+
+This solution checks the shelves (columns) from right to left and
+uses Binary Search within each column that might contain the target.
+
+
+WHY BINARY SEARCH INSTEAD OF A NORMAL LOOP?
+----------------------------------------------------------------
+A normal approach could check every cell. With R rows and C columns,
+that could take O(R * C) time.
+
+Here, each column is sorted. Binary Search uses that order: after
+checking the middle value, it can discard half the remaining rows.
+Searching one column takes O(log R), and searching up to C columns
+takes O(C * log R).
+
+The column order lets us skip a whole column when its top value is
+already greater than the target: every value below it is at least
+as large, so none can match.
+
+
+WHY THE SORTING CONDITION MATTERS
+----------------------------------------------------------------
+Binary Search only works when the values in the searched range are
+sorted. This code searches vertically, so every column must increase
+from top to bottom.
+
+If even one column is not sorted, the code may discard the half that
+contains the target and give an incorrect result.
+
+This approach does not rely on rows being sorted.
+
+
+VARIABLES: WHY THEY EXIST
+----------------------------------------------------------------
+rows
+ Stores the index of the last row. It is declared in the original
+ code but is not used by the search.
+
+cols
+ Stores the index of the last column. It gives c its starting
+ position at the rightmost column.
+
+r
+ Marks the first row to search. It stays at 0, so each Binary
+ Search starts at the top of the column.
+
+c
+ Identifies the current column. It starts at the rightmost column
+ and decreases to move left after a column is skipped or searched.
+
+low
+ Marks the first row still possible in the current Binary Search.
+ It moves downward when the middle value is too small.
+
+high
+ Marks the last row still possible in the current Binary Search.
+ It moves upward when the middle value is too large.
+
+midrow
+ Marks the middle row of the current search range. Its value is
+ checked in the current column.
+
+
+CONDITION-BY-CONDITION LOGIC
+----------------------------------------------------------------
+while (c >= 0)
+ Keep checking columns while c is a valid column index. Once c is
+ -1, every column has been considered.
+
+if (matrix[0][c] > target)
+ The top value is the smallest value in this sorted column. If
+ even this value is greater than target, every value below it is
+ also too large. Skip the column by moving c left.
+
+else
+ The top value is not greater than target. The target might be
+ somewhere in this column, so search its rows with Binary Search.
+
+while (low <= high)
+ Continue while at least one row remains in the current search
+ range. If low becomes greater than high, the range is empty and
+ the target is not in this column.
+
+if (matrix[midrow][c] == target)
+ The middle value matches the target, so return true immediately.
+
+if (matrix[midrow][c] > target)
+ The middle value is too large. Since the column increases
+ downward, this value and the rows below it are too large as well.
+ Discard them by setting high to midrow - 1.
+
+else
+ Equality and the too-large case have already been handled, so the
+ middle value is smaller than target. The rows above it are no
+ larger, so discard them by setting low to midrow + 1.
+
+After Binary Search ends without a match
+ This column did not contain the target. Decrease c and search the
+ next column to the left.
+
+After all columns have been checked
+ The loop ends with c < 0. Since no match was found, return false.
+
+
+COMPLETE DRY RUN
+----------------------------------------------------------------
+Input:
+
+ matrix = [
+ [1, 4, 7],
+ [2, 5, 8],
+ [3, 6, 9]
+ ]
+ target = 6
+
+There are 3 rows and 3 columns:
+ cols = matrix[0].length - 1 = 2
+ r = 0
+ c = 2
+
+FIRST COLUMN CHECK: c = 2
+ Column 2 is [7, 8, 9].
+ matrix[0][2] is 7. Since 7 > 6, every value in this column is
+ too large. Skip it:
+ c becomes 1
+
+SECOND COLUMN CHECK: c = 1
+ Column 1 is [4, 5, 6].
+ matrix[0][1] is 4. Since 4 is not greater than 6, this column
+ could contain the target.
+
+ Start Binary Search:
+ low = r = 0
+ high = matrix.length - 1 = 2
+
+ Binary Search iteration 1:
+ midrow = (0 + 2) / 2 = 1
+ matrix[1][1] is 5
+
+ 5 is not 6, and 5 is smaller than 6.
+ The rows above row 1 cannot contain 6, so move down:
+ low = midrow + 1 = 2
+
+ Binary Search iteration 2:
+ low = 2, high = 2
+ midrow = (2 + 2) / 2 = 2
+ matrix[2][1] is 6
+
+ The value equals the target, so return true.
+
+The target is at matrix[2][1].
+
+
+IF THE TARGET IS ABSENT
+----------------------------------------------------------------
+If Binary Search does not find the target in a column, its search
+range eventually becomes empty: low > high. The code then moves to
+the next column.
+
+If every column is searched without a match, c eventually becomes
+-1, the outer loop ends, and the method returns false.
+
+
+COMPLEXITY
+----------------------------------------------------------------
+Let R be the number of rows and C the number of columns.
+
+Time: O(C * log R)
+Each column may be searched with Binary Search.
+
+Extra space: O(1)
+The algorithm uses a fixed number of variables and creates no
+additional data structure.
+
+
+EDGE CASES AND ASSUMPTIONS
+----------------------------------------------------------------
+- A one-row or one-column non-empty matrix can be searched.
+- An empty matrix is not handled by this code: it accesses
+ matrix[0].length, which would cause an error.
+- rows is retained to preserve the original code, although it is
+ unused.
+- If the matrix has columns but zero rows, it is also not supported.
+
+
+================================================================
+SOLUTION
+================================================================
+*/
+
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+
+        // as the matrix is sorted in column wise
+
+        int rows = matrix.length-1;
+        int cols = matrix[0].length-1;
+
+        int r =0;
+        int c = cols;
+
+        while( c >= 0){
+            if(matrix[0][c]>target)
+                c--;
+
+            else{
+                int low = r;
+                int high = matrix.length-1;
+
+                while(low<=high){
+                    int midrow = (low+high)/2;
+
+                    if(matrix[midrow][c] == target){
+                        return true;
+                    }
+
+                    if(matrix[midrow][c] > target){
+                        high = midrow-1;
+                    }
+                    else{
+                        low = midrow+1;
+                    }
+
+                }
+                c--;
+
+            }
+        }
+
+        return false;
+
+    }
+}
