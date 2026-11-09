@@ -668,7 +668,7 @@ EDGE CASES AND ASSUMPTIONS
  matrix[0].length, which would cause an error.
 - rows is retained to preserve the original code, although it is
  unused.
-- If the matrix has columns but zero rows, it is also not supported.
+- If the matrix has columns but zero rows, it is also not supported .
 
 
 ================================================================
