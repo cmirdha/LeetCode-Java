@@ -311,3 +311,337 @@ class Solution {
         );
     }
 }
+
+
+
+/*
+================================================================
+PROBLEM: TASK SCHEDULER
+LEETCODE: 621
+DIFFICULTY: MEDIUM
+PATTERNS: GREEDY, FREQUENCY ARRAY
+================================================================
+
+PROBLEM IN SIMPLE WORDS
+----------------------------------------------------------------
+Given an array of tasks represented by uppercase characters
+and a cooldown period n, execute all tasks in minimum intervals.
+
+Rules:
+1. Each task takes one interval.
+2. The same task must have at least n intervals between
+   two consecutive executions.
+3. Different tasks can be executed in any order.
+4. If no task is available, the CPU remains idle.
+
+Return the minimum number of intervals required.
+
+Example:
+
+Input:
+tasks = ['A','A','A','B','B','B']
+n = 2
+
+Output:
+8
+
+Possible schedule:
+
+A B idle A B idle A B
+
+================================================================
+APPROACH: GREEDY + FREQUENCY ARRAY
+================================================================
+
+CORE IDEA
+----------------------------------------------------------------
+Instead of using a HashMap, we use an integer array of size 26.
+
+Since tasks contain only uppercase English letters (A-Z),
+we can directly use their character positions as array indices.
+
+We count the frequency of every task.
+
+Then we find:
+
+1. Maximum frequency of any task.
+2. Number of tasks having that maximum frequency.
+
+Finally, we use these values to calculate the minimum intervals.
+
+================================================================
+STEP 1: CREATE FREQUENCY ARRAY
+================================================================
+
+int[] freqarr = new int[26];
+
+WHY?
+
+There are 26 uppercase English letters.
+
+Each index represents one character:
+
+A -> 0
+B -> 1
+C -> 2
+...
+Z -> 25
+
+Initially, every index contains 0.
+
+================================================================
+STEP 2: COUNT TASK FREQUENCIES
+================================================================
+
+for(char ch : tasks){
+    freqarr[ch - 'A']++;
+}
+
+WHY ch - 'A'?
+
+Java characters have numeric values.
+
+For example:
+
+'A' - 'A' = 0
+'B' - 'A' = 1
+'C' - 'A' = 2
+
+Therefore, subtracting 'A' converts each character
+into its corresponding array index.
+
+DRY RUN:
+
+tasks = ['A','A','A','B','B','B','C']
+
+freqarr:
+
+Index 0 (A) -> 3
+Index 1 (B) -> 3
+Index 2 (C) -> 1
+
+All remaining indices -> 0
+
+================================================================
+STEP 3: FIND MAXIMUM FREQUENCY
+================================================================
+
+int maxfreq = 0;
+
+for(int i : freqarr){
+    maxfreq = Math.max(maxfreq,i);
+}
+
+WHY?
+
+We need to identify the task that occurs most frequently.
+
+From our example:
+
+A -> 3
+B -> 3
+C -> 1
+
+Therefore:
+
+maxfreq = 3
+
+================================================================
+STEP 4: COUNT TASKS WITH MAXIMUM FREQUENCY
+================================================================
+
+int maxcount = 0;
+
+for(int i : freqarr){
+    if(i == maxfreq)
+        maxcount++;
+}
+
+WHY?
+
+There can be multiple tasks with the same maximum frequency.
+
+Example:
+
+A -> 3
+B -> 3
+C -> 1
+
+Both A and B have the maximum frequency.
+
+Therefore:
+
+maxcount = 2
+
+IMPORTANT:
+
+The frequency array also contains unused characters with
+frequency 0.
+
+But maxfreq is at least 1 for a non-empty task array,
+so those unused characters are not counted.
+
+================================================================
+STEP 5: CALCULATE MINIMUM INTERVALS
+================================================================
+
+return Math.max(
+    tasks.length,
+    ((maxfreq-1)*(n+1))+maxcount
+);
+
+UNDERSTANDING THE FORMULA
+----------------------------------------------------------------
+
+(maxfreq - 1)
+
+Number of gaps between repetitions of the most frequent task.
+
+(n + 1)
+
+One task position plus the required cooldown spacing.
+
+maxcount
+
+Number of tasks sharing the maximum frequency.
+
+tasks.length
+
+Total number of actual tasks.
+
+WHY Math.max()?
+
+If there are enough different tasks to fill the cooldown
+gaps, no idle time is required.
+
+Therefore, the answer cannot be smaller than tasks.length.
+
+================================================================
+DRY RUN
+================================================================
+
+Input:
+
+tasks = ['A','A','A','B','B','B']
+n = 2
+
+FREQUENCY ARRAY:
+
+A -> 3
+B -> 3
+
+STEP 1:
+
+maxfreq = 3
+
+STEP 2:
+
+maxcount = 2
+
+STEP 3:
+
+Formula:
+
+(maxfreq - 1) * (n + 1) + maxcount
+
+= (3 - 1) * (2 + 1) + 2
+
+= 2 * 3 + 2
+
+= 8
+
+STEP 4:
+
+Math.max(tasks.length, 8)
+
+Math.max(6, 8) = 8
+
+OUTPUT:
+
+8
+
+POSSIBLE SCHEDULE:
+
+A B idle A B idle A B
+
+Total intervals = 8
+
+================================================================
+IMPORTANT INTERVIEW OBSERVATIONS
+================================================================
+
+1. When the input contains a limited range of characters,
+   a frequency array can replace a HashMap.
+
+2. ch - 'A' converts uppercase characters into array indices.
+
+3. maxfreq identifies the most frequent task.
+
+4. maxcount handles multiple tasks having the same
+   maximum frequency.
+
+5. Greedy scheduling is based on the most frequent tasks.
+
+6. Other tasks can occupy the cooldown gaps.
+
+7. Math.max() ensures that we account for all actual tasks.
+
+================================================================
+COMPLEXITY ANALYSIS
+================================================================
+
+Let N = tasks.length.
+
+TIME COMPLEXITY:
+
+O(N + 26 + 26)
+
+1. Building frequency array: O(N)
+2. Finding maximum frequency: O(26)
+3. Counting maximum frequency tasks: O(26)
+
+Overall: O(N)
+
+SPACE COMPLEXITY:
+
+O(26) = O(1)
+
+The frequency array always contains exactly 26 elements.
+
+================================================================
+FULL JAVA IMPLEMENTATION
+================================================================
+*/
+
+class Solution {
+    public int leastInterval(char[] tasks, int n) {
+
+        // Step 1: Create frequency array
+        int[] freqarr = new int[26];
+
+        // Step 2: Count frequency of every task
+        for(char ch : tasks){
+            freqarr[ch - 'A']++;
+        }
+
+        int maxfreq = 0;
+        int maxcount = 0;
+
+        // Step 3: Find maximum frequency
+        for(int i : freqarr){
+            maxfreq = Math.max(maxfreq,i);
+        }
+
+        // Step 4: Count tasks having maximum frequency
+        for(int i : freqarr){
+            if(i == maxfreq)
+                maxcount++;
+        }
+
+        // Step 5: Calculate minimum intervals
+        return Math.max(
+                tasks.length,
+                ((maxfreq-1)*(n+1))+maxcount
+        );
+    }
+}
