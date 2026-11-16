@@ -645,3 +645,327 @@ class Solution {
         );
     }
 }
+
+/*
+ * Problem Name: Task Scheduler
+ * LeetCode Number: 621
+ * Difficulty: Medium
+ * Pattern: Greedy + Max Heap + Simulation
+ *
+ * ------------------------------------------------------------
+ * EXPLAIN LIKE I'M 10 YEARS OLD
+ * ------------------------------------------------------------
+ *
+ * Imagine a computer needs to complete several tasks.
+ *
+ * Some tasks appear multiple times.
+ *
+ * After executing a task, the computer must wait for n time
+ * units before executing that SAME task again.
+ *
+ * During the waiting period, the computer can execute other
+ * available tasks. If no task is available, it stays idle.
+ *
+ * Our goal is to complete all tasks in the minimum time.
+ *
+ * Example:
+ *
+ * tasks = ['A','A','A','B','B','B']
+ * n = 2
+ *
+ * A valid schedule:
+ *
+ * A -> B -> Idle -> A -> B -> Idle -> A -> B
+ *
+ * Total time = 8
+ *
+ * ------------------------------------------------------------
+ * APPROACH: GREEDY + MAX HEAP + CYCLE SIMULATION
+ * ------------------------------------------------------------
+ *
+ * STEP 1: COUNT FREQUENCIES
+ *
+ * Use an array of size 26 because tasks are uppercase letters.
+ *
+ * freq[0] represents A
+ * freq[1] represents B
+ * freq[2] represents C
+ * ...
+ *
+ * STEP 2: CREATE A MAX HEAP
+ *
+ * Store only the frequencies of tasks that actually exist.
+ *
+ * Why Max Heap?
+ *
+ * We want to execute the task with the highest remaining
+ * frequency first.
+ *
+ * This helps schedule frequently repeated tasks early.
+ *
+ * STEP 3: CREATE A CYCLE OF n + 1
+ *
+ * Why n + 1?
+ *
+ * After executing a task, we need n time units before
+ * executing that same task again.
+ *
+ * Therefore, one task can appear at most once in a cycle
+ * containing n + 1 slots.
+ *
+ * Example:
+ *
+ * n = 2
+ * cycle = 3
+ *
+ * A -> B -> C
+ *
+ * The same task cannot be selected twice in these 3 slots.
+ *
+ * STEP 4: USE A TEMPORARY LIST
+ *
+ * When we remove a frequency from the heap and execute
+ * that task, decrease its frequency by 1.
+ *
+ * Store the decreased frequency in temp.
+ *
+ * Do NOT immediately insert it back into the heap.
+ *
+ * Why?
+ *
+ * Because that would allow the same task to be selected
+ * again in the same cycle, violating the cooldown.
+ *
+ * After the cycle ends, put the remaining frequencies
+ * back into the heap.
+ *
+ * STEP 5: COUNT TIME
+ *
+ * Every executed task consumes one time unit.
+ *
+ * Every unused slot in a cycle becomes idle time if
+ * tasks are still remaining.
+ *
+ * If the heap becomes empty, all tasks are completed.
+ * Do not count unnecessary idle slots after completion.
+ *
+ * ------------------------------------------------------------
+ * DETAILED DRY RUN
+ * ------------------------------------------------------------
+ *
+ * Input:
+ *
+ * tasks = ['A','A','A','B','B','B']
+ * n = 2
+ *
+ * Frequency:
+ *
+ * A = 3
+ * B = 3
+ *
+ * Initial heap:
+ *
+ * pq = [3, 3]
+ *
+ * time = 0
+ *
+ * CYCLE 1:
+ *
+ * cycle = n + 1 = 3
+ *
+ * 1. Remove 3 (A), remaining frequency = 2.
+ *    Store 2 in temp.
+ *    time = 1, cycle = 2.
+ *
+ * 2. Remove 3 (B), remaining frequency = 2.
+ *    Store 2 in temp.
+ *    time = 2, cycle = 1.
+ *
+ * Heap is now empty.
+ *
+ * Put temp values back:
+ *
+ * temp = [2, 2]
+ * pq = [2, 2]
+ *
+ * One slot remains in the cycle.
+ * Since tasks are still remaining, that slot is idle.
+ *
+ * time = 2 + 1 = 3.
+ *
+ * Schedule: A -> B -> Idle
+ *
+ * CYCLE 2:
+ *
+ * pq = [2, 2]
+ * cycle = 3
+ *
+ * 1. Remove 2 (A), remaining = 1.
+ *    Store 1 in temp.
+ *    time = 4, cycle = 2.
+ *
+ * 2. Remove 2 (B), remaining = 1.
+ *    Store 1 in temp.
+ *    time = 5, cycle = 1.
+ *
+ * Put temp values back:
+ *
+ * temp = [1, 1]
+ * pq = [1, 1]
+ *
+ * One slot remains, and tasks are still remaining.
+ * Therefore, add one idle time unit.
+ *
+ * time = 5 + 1 = 6.
+ *
+ * Schedule: A -> B -> Idle
+ *
+ * CYCLE 3:
+ *
+ * pq = [1, 1]
+ * cycle = 3
+ *
+ * 1. Remove 1 (A).
+ *    This is its final execution.
+ *    Do not add zero to temp.
+ *    time = 7, cycle = 2.
+ *
+ * 2. Remove 1 (B).
+ *    This is its final execution.
+ *    Do not add zero to temp.
+ *    time = 8, cycle = 1.
+ *
+ * Heap is empty.
+ *
+ * Break immediately.
+ *
+ * Do NOT add the remaining cycle slot because all tasks
+ * are already completed.
+ *
+ * Final schedule:
+ *
+ * A -> B -> Idle -> A -> B -> Idle -> A -> B
+ *
+ * Answer = 8
+ *
+ * ------------------------------------------------------------
+ * IMPORTANT OBSERVATIONS
+ * ------------------------------------------------------------
+ *
+ * 1. Max Heap:
+ *    Always gives us the task with the highest frequency.
+ *
+ * 2. cycle = n + 1:
+ *    Creates a window in which a task can execute only once.
+ *
+ * 3. temp:
+ *    Prevents a task from being selected again in the same cycle.
+ *
+ * 4. current > 1:
+ *    Prevents zero frequencies from entering the heap.
+ *
+ * 5. pq.isEmpty():
+ *    Prevents unnecessary idle time after all tasks finish.
+ *
+ * 6. time += cycle:
+ *    Counts unused cycle slots as idle time when tasks remain.
+ *
+ * ------------------------------------------------------------
+ * COMPLEXITY ANALYSIS
+ * ------------------------------------------------------------
+ *
+ * Let N = total number of tasks.
+ *
+ * Frequency counting:
+ * O(N)
+ *
+ * Heap size:
+ * At most 26 because there are only 26 uppercase letters.
+ *
+ * Each task execution involves heap operations:
+ * O(log 26)
+ *
+ * Total time:
+ * O(N * log 26) = O(N), since 26 is constant.
+ *
+ * Space:
+ * Frequency array = O(26)
+ * Heap = O(26)
+ * Temporary list = O(26)
+ *
+ * Overall auxiliary space = O(1), since the alphabet
+ * size is fixed.
+ */
+
+class Solution {
+    public int leastInterval(char[] tasks, int n) {
+
+        // STEP 1: Count how many times each task appears.
+        int[] freq = new int[26];
+
+        for (char task : tasks) {
+            freq[task - 'A']++;
+        }
+
+        // STEP 2: Create a Max Heap.
+        // Highest frequency will be removed first.
+        PriorityQueue<Integer> pq =
+                new PriorityQueue<>(Collections.reverseOrder());
+
+        // Add only frequencies greater than zero.
+        for (int f : freq) {
+            if (f > 0) {
+                pq.offer(f);
+            }
+        }
+
+        // Counts task execution time + idle time.
+        int time = 0;
+
+        // Continue until every task is completed.
+        while (!pq.isEmpty()) {
+
+            // Stores decreased frequencies temporarily.
+            // They cannot be reused in the same cycle.
+            List<Integer> temp = new ArrayList<>();
+
+            // One cycle contains n + 1 time slots.
+            int cycle = n + 1;
+
+            // Execute different available tasks in this cycle.
+            while (cycle > 0 && !pq.isEmpty()) {
+
+                // Get the task with the highest remaining frequency.
+                int current = pq.poll();
+
+                // One occurrence is now completed.
+                // Store only if more occurrences are remaining.
+                if (current > 1) {
+                    temp.add(current - 1);
+                }
+
+                // One task execution consumes one time unit.
+                time++;
+
+                // One cycle slot has been used.
+                cycle--;
+            }
+
+            // Make remaining tasks available for the next cycle.
+            for (int num : temp) {
+                pq.offer(num);
+            }
+
+            // All tasks are completed.
+            // Do not count unnecessary idle time.
+            if (pq.isEmpty()) {
+                break;
+            }
+
+            // Any unused slots in this cycle are idle time.
+            time += cycle;
+        }
+
+        return time;
+    }
+}
