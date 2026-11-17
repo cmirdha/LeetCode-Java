@@ -304,3 +304,92 @@ class Solution {
         return (int) maxprofit;
     }
 }
+
+/*
+Problem Name: IPO
+LeetCode Number: 502
+Difficulty: Hard
+Pattern: Greedy + Sorting + Max Heap
+
+APPROACH:
+1. Store each project as [requiredCapital, profit].
+2. Sort projects by required capital in ascending order.
+3. Maintain a Max Heap containing profits of all currently
+   affordable projects.
+4. For each of the k selections:
+   - Add all affordable projects to the Max Heap.
+   - Pick the project with maximum profit.
+   - Add that profit to our current capital.
+5. Return the maximum capital.
+
+WHY THIS WORKS:
+We always choose the highest-profit project among all
+projects we can currently afford.
+
+Since profits are positive, increasing our capital is
+always beneficial.
+
+TIME COMPLEXITY: O(N log N + k log N)
+SPACE COMPLEXITY: O(N)
+
+*/
+
+class Solution {
+    public int findMaximizedCapital(int k, int w,
+                                    int[] profits, int[] capital) {
+
+        // Number of available projects
+        int n = profits.length;
+
+        // projects[i][0] = required capital
+        // projects[i][1] = profit
+        int[][] projects = new int[n][2];
+
+        // Max Heap:
+        // Stores profits of currently affordable projects.
+        // Highest profit comes out first.
+        PriorityQueue<Integer> pq =
+                new PriorityQueue<>(Collections.reverseOrder());
+
+        // Store each project's required capital and profit.
+        for (int i = 0; i < n; i++) {
+            projects[i][0] = capital[i];
+            projects[i][1] = profits[i];
+        }
+
+        // Sort projects by required capital in ascending order.
+        Arrays.sort(projects,
+                (a, b) -> Integer.compare(a[0], b[0])
+        );
+
+        // Points to the next project not yet added to the heap.
+        int index = 0;
+
+        // We can select at most k projects.
+        for (int i = 0; i < k; i++) {
+
+            // Add every project that we can currently afford.
+            while (index < n && projects[index][0] <= w) {
+
+                // Store only its profit in the Max Heap.
+                pq.offer(projects[index][1]);
+
+                // Move to the next project.
+                index++;
+            }
+
+            // No affordable project is available.
+            // We cannot increase our capital anymore.
+            if (pq.isEmpty()) {
+                return w;
+            }
+
+            // Select the most profitable affordable project.
+            // Add its profit to our current capital.
+            w += pq.poll();
+        }
+
+        // Return the maximum capital after up to k projects.
+        return w;
+    }
+}
