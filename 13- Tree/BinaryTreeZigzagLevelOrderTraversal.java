@@ -139,13 +139,3 @@ class Solution {
     }
 }
 
-/*
-===============================================================================
-FILENAME: BinaryTreeZigzagLevelOrderTraversal.java
-
-FOLDER: 07-Binary-Trees/
-
-GITHUB COMMIT MESSAGE:
-Day 58 - Binary Tree Zigzag Level Order Traversal
-===============================================================================
-*/
